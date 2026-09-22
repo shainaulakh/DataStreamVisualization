@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Joint Current Monitor</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 12h3l2-7 3 9 2-5h4' fill='none' stroke='%232a78d6' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='monitor.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" integrity="sha384-NrKB+u6Ts6AtkIhwPixiKTzgSKNblyhlk0Sohlgar9UHUBzai/sgnNNWWd291xqt" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header class="masthead">
+    <div>
+      <h1>RMBR4-2 joint current monitor</h1>
+      <p class="sub">Kawasaki material-handling robot · replaying the 17–18 Oct 2022 shift from Neon</p>
+    </div>
+    <div class="badges">
+      <span id="state" class="badge"><span class="dot"></span><span class="text">Waiting</span></span>
+      <span id="health" class="badge good"><span class="dot"></span><span class="text">✓ Health OK</span></span>
+    </div>
+  </header>
+
+  <main>
+    <div class="controls" role="group" aria-label="View">
+      <button id="realtime-view" class="selected" type="button">Real-time</button>
+      <button id="history-view" type="button">Full history</button>
+      <span id="note" class="note" aria-live="polite"></span>
+    </div>
+
+    <section class="card">
+      <h2 id="trace-title">Total current, last 90 seconds</h2>
+      <div class="trace-box"><canvas id="trace" role="img" aria-label="Total current over time"></canvas></div>
+    </section>
+
+    <div class="columns">
+      <section class="card">
+        <h2>Each joint against its calibration limit</h2>
+        <p class="sub">The tick marks the highest current that joint drew in the first hour of the shift.</p>
+        <ul id="meters" class="meters">
+          {% for joint in joints %}
+          <li data-joint="{{ joint }}" data-limit="{{ limits[joint] }}">
+            <span class="name">{{ labels[joint] }}</span>
+            <span class="track"><span class="fill"></span><span class="limit"></span></span>
+            <span class="value">0.0 A</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Anomaly events</h2>
+        <p class="sub">A reading above its joint's calibration limit.</p>
+        <table>
+          <thead><tr><th>Time</th><th>Joint</th><th>Value</th><th>Limit</th><th>Over</th></tr></thead>
+          <tbody id="events"><tr class="empty"><td colspan="5">None yet</td></tr></tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <script>window.MONITOR = {{ settings | tojson }};</script>
+  <script src="{{ url_for('static', filename='monitor.js') }}"></script>
+</body>
+</html>
